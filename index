@@ -2,666 +2,3888 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+  <meta
+    name="viewport"
+    content="width=device-width,
+             initial-scale=1.0,
+             maximum-scale=1.0,
+             minimum-scale=1.0,
+             user-scalable=no,
+             viewport-fit=cover"
+  >
+
   <title>家族の買い物メモ</title>
+
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
+
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap');
-    
+
     * {
       box-sizing: border-box;
       -webkit-text-size-adjust: 100%;
-    }
-    html, body {
-      font-family: 'Zen Kaku Gothic New', sans-serif;
       -webkit-tap-highlight-color: transparent;
-      overflow-x: hidden;
+    }
+
+    html {
       width: 100%;
       height: 100%;
-      position: fixed;
+      overflow: hidden;
+      touch-action: manipulation;
+      overscroll-behavior: none;
+    }
+
+    body {
+      font-family: 'Zen Kaku Gothic New', sans-serif;
+      width: 100%;
+      height: 100%;
+      min-height: 100dvh;
       margin: 0;
       padding: 0;
+      overflow: hidden;
+      touch-action: manipulation;
+      overscroll-behavior: none;
     }
-    .no-scrollbar::-webkit-scrollbar { display: none; }
-    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-    
-    @supports (padding-bottom: env(safe-area-inset-bottom)) {
-      .pb-safe { padding-bottom: calc(0.75rem + env(safe-area-inset-bottom)); }
+
+    button,
+    input {
+      max-width: 100%;
     }
-    
+
+    button {
+      touch-action: manipulation;
+    }
+
+    .app-height {
+      height: 100vh;
+      height: 100dvh;
+      max-height: 100dvh;
+    }
+
+    .safe-top {
+      padding-top: max(
+        0.75rem,
+        calc(env(safe-area-inset-top) + 0.35rem)
+      );
+    }
+
+    .safe-bottom {
+      padding-bottom: max(
+        0.75rem,
+        calc(env(safe-area-inset-bottom) + 0.5rem)
+      );
+    }
+
+    .modal-safe-top {
+      padding-top: max(
+        1rem,
+        calc(env(safe-area-inset-top) + 0.5rem)
+      );
+    }
+
+    .modal-safe-bottom {
+      padding-bottom: max(
+        1rem,
+        calc(env(safe-area-inset-bottom) + 0.5rem)
+      );
+    }
+
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+
     @keyframes slideUp {
-      from { transform: translateY(100%); }
-      to { transform: translateY(0); }
+      from {
+        transform: translateY(100%);
+      }
+
+      to {
+        transform: translateY(0);
+      }
     }
+
     .animate-slide-up {
       animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     }
+
     @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
+      from {
+        opacity: 0;
+      }
+
+      to {
+        opacity: 1;
+      }
     }
+
     .animate-fade-in {
       animation: fadeIn 0.2s ease-out;
     }
-    
-    /* リスト項目のなめらかでゆったりとした移動アニメーション */
+
     .memo-card {
       transition: all 0.7s cubic-bezier(0.25, 1, 0.5, 1);
     }
   </style>
 </head>
-<body class="bg-[#FAF9F6] text-stone-800 flex flex-col relative w-screen h-screen overflow-hidden">
 
-  <!-- 初回ローディング -->
-  <div id="initial-loading" class="fixed inset-0 bg-[#FAF9F6] z-[60] flex flex-col items-center justify-center gap-4 transition-opacity duration-300">
-    <div class="w-8 h-8 border-4 border-stone-200 border-t-stone-600 rounded-full animate-spin"></div>
-    <p class="text-stone-500 text-sm font-medium">メモを読み込み中...</p>
-  </div>
+<body
+  class="
+    bg-[#FAF9F6]
+    text-stone-800
+    w-full
+    overflow-hidden
+  "
+>
 
-  <!-- トースト通知 -->
-  <div id="toast" class="hidden fixed top-4 left-1/2 -translate-x-1/2 bg-stone-800/90 text-white px-4 py-2 rounded-full shadow-lg z-[70] text-xs font-medium transition-opacity backdrop-blur-sm whitespace-nowrap"></div>
+  <div
+    class="
+      app-height
+      max-w-md
+      mx-auto
+      bg-[#FAF9F6]
+      flex
+      flex-col
+      relative
+      overflow-hidden
+      shadow-xl
+    "
+  >
 
-  <!-- ヘッダー -->
-  <header class="flex items-center justify-between px-4 py-3 bg-white/80 backdrop-blur-md border-b border-stone-100 z-10 flex-shrink-0 w-full">
-    <h1 class="text-base font-bold tracking-wider text-stone-700">お買い物メモ</h1>
-    <button id="open-settings-btn" class="p-1.5 -mr-1.5 text-stone-400 hover:text-stone-600 transition-colors">
-      <i data-lucide="settings" class="w-4 h-4"></i>
-    </button>
-  </header>
+    <!-- 初回ローディング -->
+    <div
+      id="initial-loading"
+      class="
+        fixed
+        inset-0
+        bg-[#FAF9F6]
+        z-[60]
+        flex
+        flex-col
+        items-center
+        justify-center
+        gap-4
+        transition-opacity
+        duration-300
+      "
+    >
+      <div
+        class="
+          w-8
+          h-8
+          border-4
+          border-stone-200
+          border-t-stone-600
+          rounded-full
+          animate-spin
+        "
+      ></div>
 
-  <!-- メインリスト領域 -->
-  <main id="list-container" class="flex-1 overflow-y-auto px-3 pt-3 pb-48 space-y-2 no-scrollbar w-full"></main>
-
-  <!-- 下部入力エリア -->
-  <footer class="absolute bottom-0 left-0 right-0 w-full bg-white/95 backdrop-blur-lg border-t border-stone-100 p-2.5 pb-safe shadow-[0_-10px_20px_-10px_rgba(0,0,0,0.05)] z-20">
-    
-    <!-- 入力者選択（横並びピル） -->
-    <div id="member-horizontal-list" class="flex items-center gap-1.5 mb-2 overflow-x-auto no-scrollbar px-0.5 w-full"></div>
-
-    <!-- 画像プレビュー -->
-    <div id="image-preview-container" class="hidden relative mb-2 px-1 animate-fade-in">
-      <img id="image-preview" src="" class="h-14 w-14 object-cover rounded-xl border border-stone-200 shadow-sm">
-      <button id="remove-image-btn" class="absolute -top-2 -right-2 bg-stone-700 text-white rounded-full p-1 shadow-md">
-        <i data-lucide="x" class="w-3 h-3"></i>
-      </button>
+      <p class="text-stone-500 text-sm font-medium">
+        メモを読み込み中...
+      </p>
     </div>
 
-    <!-- 入力フォーム -->
-    <form id="add-form" class="flex items-center gap-2 w-full">
-      <input type="file" id="image-input" accept="image/*" class="hidden">
-      <button type="button" id="trigger-image-btn" class="flex-shrink-0 p-2.5 bg-stone-50 text-stone-400 rounded-xl border border-stone-200 active:bg-stone-100 transition-colors">
-        <i data-lucide="image" class="w-4 h-4"></i>
-      </button>
-      <input type="text" id="item-input" placeholder="何を買う？" class="flex-1 min-w-0 w-full bg-stone-50 border border-stone-200 rounded-xl px-3.5 py-2.5 text-[16px] text-stone-800 placeholder-stone-400 outline-none focus:bg-white focus:ring-2 focus:ring-stone-200 transition-all">
-      <button type="submit" id="submit-btn" class="flex-shrink-0 p-2.5 bg-stone-800 text-white rounded-xl shadow-sm active:bg-stone-700 transition-all disabled:opacity-50">
-        <i data-lucide="send" class="w-4 h-4"></i>
-      </button>
-    </form>
-  </footer>
+    <!-- トースト -->
+    <div
+      id="toast"
+      class="
+        hidden
+        fixed
+        left-1/2
+        -translate-x-1/2
+        bg-stone-800/90
+        text-white
+        px-4
+        py-2
+        rounded-full
+        shadow-lg
+        z-[70]
+        text-xs
+        font-medium
+        backdrop-blur-sm
+        whitespace-nowrap
+      "
+      style="
+        top: max(
+          1rem,
+          calc(env(safe-area-inset-top) + 0.75rem)
+        );
+      "
+    ></div>
 
-  <!-- ================= モーダル群 ================= -->
+    <!-- ヘッダー -->
+    <header
+      class="
+        flex
+        items-center
+        justify-between
+        px-4
+        pb-3
+        bg-white/80
+        backdrop-blur-md
+        border-b
+        border-stone-100
+        z-10
+        flex-shrink-0
+        w-full
+        safe-top
+      "
+    >
+      <h1
+        class="
+          text-base
+          font-bold
+          tracking-wider
+          text-stone-700
+        "
+      >
+        お買い物メモ
+      </h1>
 
-  <!-- 設定フルスクリーンモーダル -->
-  <div id="settings-modal" class="hidden fixed inset-0 w-full h-full bg-[#FAF9F6] z-50 flex flex-col overflow-hidden">
-    <header class="flex items-center justify-between p-4 bg-white border-b border-stone-100 w-full flex-shrink-0">
-      <h2 class="text-base font-bold text-stone-700">設定</h2>
-      <button id="close-settings" class="p-1.5 -mr-1.5 text-stone-400 bg-stone-50 rounded-full"><i data-lucide="x" class="w-4 h-4"></i></button>
+      <button
+        id="open-settings-btn"
+        type="button"
+        class="
+          p-1.5
+          -mr-1.5
+          text-stone-400
+          hover:text-stone-600
+          transition-colors
+        "
+      >
+        <i
+          data-lucide="settings"
+          class="w-4 h-4"
+        ></i>
+      </button>
     </header>
-    <div class="flex-1 overflow-y-auto p-4 space-y-6 no-scrollbar w-full">
-      
-      <!-- 共有セクション -->
+
+    <!-- リスト -->
+    <main
+      id="list-container"
+      class="
+        flex-1
+        min-h-0
+        overflow-y-auto
+        overscroll-contain
+        px-3
+        pt-3
+        pb-48
+        space-y-2
+        no-scrollbar
+        w-full
+      "
+    ></main>
+
+    <!-- 下部入力 -->
+    <footer
+      class="
+        absolute
+        bottom-0
+        left-0
+        right-0
+        w-full
+        bg-white/95
+        backdrop-blur-lg
+        border-t
+        border-stone-100
+        px-2.5
+        pt-2.5
+        safe-bottom
+        shadow-[0_-10px_20px_-10px_rgba(0,0,0,0.05)]
+        z-20
+      "
+    >
+
+      <!-- 入力者 -->
+      <div
+        id="member-horizontal-list"
+        class="
+          flex
+          items-center
+          gap-1.5
+          mb-2
+          overflow-x-auto
+          no-scrollbar
+          px-0.5
+          w-full
+        "
+      ></div>
+
+      <!-- 画像プレビュー -->
+      <div
+        id="image-preview-container"
+        class="
+          hidden
+          relative
+          mb-2
+          px-1
+          animate-fade-in
+          w-fit
+        "
+      >
+        <img
+          id="image-preview"
+          src=""
+          alt=""
+          class="
+            h-14
+            w-14
+            object-cover
+            rounded-xl
+            border
+            border-stone-200
+            shadow-sm
+          "
+        >
+
+        <button
+          id="remove-image-btn"
+          type="button"
+          class="
+            absolute
+            -top-2
+            -right-2
+            bg-stone-700
+            text-white
+            rounded-full
+            p-1
+            shadow-md
+          "
+        >
+          <i
+            data-lucide="x"
+            class="w-3 h-3"
+          ></i>
+        </button>
+      </div>
+
+      <!-- 入力フォーム -->
+      <form
+        id="add-form"
+        class="
+          flex
+          items-center
+          gap-2
+          w-full
+          min-w-0
+        "
+      >
+
+        <input
+          type="file"
+          id="image-input"
+          accept="image/*"
+          class="hidden"
+        >
+
+        <button
+          type="button"
+          id="trigger-image-btn"
+          class="
+            flex-shrink-0
+            p-2.5
+            bg-stone-50
+            text-stone-400
+            rounded-xl
+            border
+            border-stone-200
+            active:bg-stone-100
+            transition-colors
+          "
+        >
+          <i
+            data-lucide="image"
+            class="w-4 h-4"
+          ></i>
+        </button>
+
+        <input
+          type="text"
+          id="item-input"
+          placeholder="何を買う？"
+          autocomplete="off"
+          class="
+            flex-1
+            min-w-0
+            w-full
+            bg-stone-50
+            border
+            border-stone-200
+            rounded-xl
+            px-3.5
+            py-2.5
+            text-[16px]
+            text-stone-800
+            placeholder-stone-400
+            outline-none
+            focus:bg-white
+            focus:ring-2
+            focus:ring-stone-200
+            transition-all
+          "
+        >
+
+        <button
+          type="submit"
+          id="submit-btn"
+          class="
+            flex-shrink-0
+            p-2.5
+            bg-stone-800
+            text-white
+            rounded-xl
+            shadow-sm
+            active:bg-stone-700
+            transition-all
+            disabled:opacity-50
+          "
+        >
+          <i
+            data-lucide="send"
+            class="w-4 h-4"
+          ></i>
+        </button>
+
+      </form>
+
+    </footer>
+
+  </div>
+
+  <!-- 設定モーダル -->
+  <div
+    id="settings-modal"
+    class="
+      hidden
+      fixed
+      inset-0
+      w-full
+      bg-[#FAF9F6]
+      z-50
+      flex
+      flex-col
+      overflow-hidden
+      app-height
+    "
+  >
+
+    <header
+      class="
+        flex
+        items-center
+        justify-between
+        px-4
+        pb-4
+        bg-white
+        border-b
+        border-stone-100
+        w-full
+        flex-shrink-0
+        safe-top
+      "
+    >
+      <h2
+        class="
+          text-base
+          font-bold
+          text-stone-700
+        "
+      >
+        設定
+      </h2>
+
+      <button
+        id="close-settings"
+        type="button"
+        class="
+          p-1.5
+          -mr-1.5
+          text-stone-400
+          bg-stone-50
+          rounded-full
+        "
+      >
+        <i
+          data-lucide="x"
+          class="w-4 h-4"
+        ></i>
+      </button>
+    </header>
+
+    <div
+      class="
+        flex-1
+        min-h-0
+        overflow-y-auto
+        p-4
+        space-y-6
+        no-scrollbar
+        w-full
+        modal-safe-bottom
+      "
+    >
+
+      <!-- 共有 -->
       <section>
-        <h3 class="text-xs font-bold text-stone-400 tracking-wider mb-2 ml-1">家族と共有</h3>
-        <div class="bg-white rounded-2xl p-4 shadow-sm border border-stone-100/50">
-          <p class="text-xs text-stone-500 mb-4 leading-relaxed">このURLを家族に送ると、同じメモリストをリアルタイムで共有・編集できます。</p>
-          <button id="copy-url-btn" class="w-full flex items-center justify-center gap-2 bg-stone-800 text-white py-3 rounded-xl text-sm font-medium active:scale-[0.98] transition-transform shadow-md">
-            <i data-lucide="link" class="w-4 h-4"></i>
+
+        <h3
+          class="
+            text-xs
+            font-bold
+            text-stone-400
+            tracking-wider
+            mb-2
+            ml-1
+          "
+        >
+          家族と共有
+        </h3>
+
+        <div
+          class="
+            bg-white
+            rounded-2xl
+            p-4
+            shadow-sm
+            border
+            border-stone-100/50
+          "
+        >
+
+          <p
+            class="
+              text-xs
+              text-stone-500
+              mb-4
+              leading-relaxed
+            "
+          >
+            このURLを家族に送ると、同じメモリストをリアルタイムで共有・編集できます。
+          </p>
+
+          <button
+            id="copy-url-btn"
+            type="button"
+            class="
+              w-full
+              flex
+              items-center
+              justify-center
+              gap-2
+              bg-stone-800
+              text-white
+              py-3
+              rounded-xl
+              text-sm
+              font-medium
+              active:scale-[0.98]
+              transition-transform
+              shadow-md
+            "
+          >
+            <i
+              data-lucide="link"
+              class="w-4 h-4"
+            ></i>
+
             招待URLをコピーする
           </button>
+
         </div>
       </section>
 
-      <!-- メンバー管理セクション -->
+      <!-- メンバー -->
       <section>
-        <h3 class="text-xs font-bold text-stone-400 tracking-wider mb-2 ml-1">入力者の管理・並び替え</h3>
-        <div class="bg-white rounded-2xl shadow-sm border border-stone-100/50 overflow-hidden w-full">
-          <ul id="settings-member-list" class="divide-y divide-stone-50 text-sm w-full"></ul>
-          
-          <!-- メンバー追加フォーム -->
-          <div class="p-3 bg-stone-50/50 space-y-3 w-full">
-            <input type="text" id="new-member-name" placeholder="新しい名前" class="w-full min-w-0 bg-white border border-stone-200 rounded-xl px-3.5 py-2.5 text-sm outline-none focus:ring-2 focus:ring-stone-200 transition-all">
-            
-            <!-- カラーパレット選択 -->
+
+        <h3
+          class="
+            text-xs
+            font-bold
+            text-stone-400
+            tracking-wider
+            mb-2
+            ml-1
+          "
+        >
+          入力者の管理・並び替え
+        </h3>
+
+        <div
+          class="
+            bg-white
+            rounded-2xl
+            shadow-sm
+            border
+            border-stone-100/50
+            overflow-hidden
+            w-full
+          "
+        >
+
+          <ul
+            id="settings-member-list"
+            class="
+              divide-y
+              divide-stone-50
+              text-sm
+              w-full
+            "
+          ></ul>
+
+          <!-- メンバー追加 -->
+          <div
+            class="
+              p-3
+              bg-stone-50/50
+              space-y-3
+              w-full
+            "
+          >
+
+            <input
+              type="text"
+              id="new-member-name"
+              placeholder="新しい名前"
+              autocomplete="off"
+              class="
+                w-full
+                min-w-0
+                bg-white
+                border
+                border-stone-200
+                rounded-xl
+                px-3.5
+                py-2.5
+                text-[16px]
+                outline-none
+                focus:ring-2
+                focus:ring-stone-200
+                transition-all
+              "
+            >
+
             <div>
-              <p class="text-[11px] font-bold text-stone-400 mb-2">バッジの色を選択</p>
-              <div id="color-palette" class="flex items-center gap-2 flex-wrap"></div>
+
+              <p
+                class="
+                  text-[11px]
+                  font-bold
+                  text-stone-400
+                  mb-2
+                "
+              >
+                バッジの色を選択
+              </p>
+
+              <div
+                id="color-palette"
+                class="
+                  flex
+                  items-center
+                  gap-2
+                  flex-wrap
+                "
+              ></div>
+
             </div>
 
-            <button id="add-member-btn" type="button" class="w-full bg-stone-800 text-white py-2.5 rounded-xl text-xs font-bold active:bg-stone-700 transition-colors shadow-sm">メンバーを追加する</button>
+            <button
+              id="add-member-btn"
+              type="button"
+              class="
+                w-full
+                bg-stone-800
+                text-white
+                py-2.5
+                rounded-xl
+                text-xs
+                font-bold
+                active:bg-stone-700
+                transition-colors
+                shadow-sm
+              "
+            >
+              メンバーを追加する
+            </button>
+
           </div>
+
         </div>
+
       </section>
+
     </div>
+
   </div>
 
-  <!-- 画像拡大モーダル -->
-  <div id="image-modal" class="hidden fixed inset-0 w-full h-full bg-stone-900/95 z-[60] flex items-center justify-center backdrop-blur-md opacity-0 transition-opacity duration-300">
-    <button id="close-image-modal" class="absolute top-4 right-4 p-3 text-white/70 hover:text-white bg-white/10 rounded-full backdrop-blur-sm"><i data-lucide="x"></i></button>
-    <img id="expanded-image" src="" class="max-w-[95%] max-h-[90%] object-contain rounded-xl shadow-2xl">
+  <!-- 画像拡大 -->
+  <div
+    id="image-modal"
+    class="
+      hidden
+      fixed
+      inset-0
+      w-full
+      app-height
+      bg-stone-900/95
+      z-[60]
+      flex
+      items-center
+      justify-center
+      backdrop-blur-md
+      opacity-0
+      transition-opacity
+      duration-300
+    "
+  >
+
+    <button
+      id="close-image-modal"
+      type="button"
+      class="
+        absolute
+        right-4
+        p-3
+        text-white/70
+        hover:text-white
+        bg-white/10
+        rounded-full
+        backdrop-blur-sm
+      "
+      style="
+        top: max(
+          1rem,
+          calc(env(safe-area-inset-top) + 0.75rem)
+        );
+      "
+    >
+      <i data-lucide="x"></i>
+    </button>
+
+    <img
+      id="expanded-image"
+      src=""
+      alt=""
+      class="
+        max-w-[95%]
+        max-h-[90%]
+        object-contain
+        rounded-xl
+        shadow-2xl
+      "
+    >
+
   </div>
 
-  <!-- 確認モーダル -->
-  <div id="confirm-modal" class="hidden fixed inset-0 w-full h-full bg-stone-900/40 z-[60] flex items-center justify-center backdrop-blur-sm">
-    <div class="bg-white rounded-2xl p-5 w-[85%] max-w-xs shadow-2xl animate-fade-in text-center">
-      <p id="confirm-message" class="text-stone-700 text-sm font-medium mb-5"></p>
+  <!-- 確認 -->
+  <div
+    id="confirm-modal"
+    class="
+      hidden
+      fixed
+      inset-0
+      w-full
+      app-height
+      bg-stone-900/40
+      z-[60]
+      flex
+      items-center
+      justify-center
+      backdrop-blur-sm
+      px-4
+    "
+  >
+
+    <div
+      class="
+        bg-white
+        rounded-2xl
+        p-5
+        w-[85%]
+        max-w-xs
+        shadow-2xl
+        animate-fade-in
+        text-center
+      "
+    >
+
+      <p
+        id="confirm-message"
+        class="
+          text-stone-700
+          text-sm
+          font-medium
+          mb-5
+          whitespace-pre-line
+        "
+      ></p>
+
       <div class="flex gap-2">
-        <button id="confirm-cancel" class="flex-1 py-2.5 rounded-xl bg-stone-100 text-stone-600 text-xs font-bold active:bg-stone-200 transition-colors">キャンセル</button>
-        <button id="confirm-ok" class="flex-1 py-2.5 rounded-xl bg-red-50 text-red-600 text-xs font-bold active:bg-red-100 transition-colors">削除する</button>
+
+        <button
+          id="confirm-cancel"
+          type="button"
+          class="
+            flex-1
+            py-2.5
+            rounded-xl
+            bg-stone-100
+            text-stone-600
+            text-xs
+            font-bold
+            active:bg-stone-200
+            transition-colors
+          "
+        >
+          キャンセル
+        </button>
+
+        <button
+          id="confirm-ok"
+          type="button"
+          class="
+            flex-1
+            py-2.5
+            rounded-xl
+            bg-red-50
+            text-red-600
+            text-xs
+            font-bold
+            active:bg-red-100
+            transition-colors
+          "
+        >
+          削除する
+        </button>
+
       </div>
+
     </div>
+
   </div>
+
 
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-    import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-    import { getFirestore, collection, addDoc, onSnapshot, updateDoc, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-    const myFirebaseConfig = {
-      apiKey: "YOUR_API_KEY",
-      authDomain: "YOUR_AUTH_DOMAIN",
-      projectId: "YOUR_PROJECT_ID",
-      storageBucket: "YOUR_STORAGE_BUCKET",
-      messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-      appId: "YOUR_APP_ID"
+    /* =========================================================
+       Firebase
+    ========================================================= */
+
+    import {
+      initializeApp
+    } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+
+
+    import {
+      getAuth,
+      signInAnonymously,
+      onAuthStateChanged,
+      setPersistence,
+      browserLocalPersistence
+    } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+
+
+    import {
+      getFirestore,
+      collection,
+      addDoc,
+      onSnapshot,
+      updateDoc,
+      doc,
+      deleteDoc,
+      writeBatch
+    } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+
+    import {
+      getStorage,
+      ref,
+      uploadBytes,
+      getDownloadURL,
+      deleteObject
+    } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js";
+
+
+    /* =========================================================
+       Firebase設定
+       前回の家計簿と同じプロジェクト
+    ========================================================= */
+
+    const firebaseConfig = {
+
+      apiKey:
+        "AIzaSyBnc3RBpaLeXBninYx9dXAAKBLvVenFK3I",
+
+      authDomain:
+        "kakeibo-e13ee.firebaseapp.com",
+
+      projectId:
+        "kakeibo-e13ee",
+
+      storageBucket:
+        "kakeibo-e13ee.firebasestorage.app",
+
+      messagingSenderId:
+        "826192711708",
+
+      appId:
+        "1:826192711708:web:0fd72a0d74158055620fd9"
+
     };
 
-    const isCanvas = typeof __app_id !== 'undefined';
-    const canvasAppId = isCanvas ? __app_id : 'default-app';
-    const firebaseConfig = (isCanvas && typeof __firebase_config !== 'undefined') ? JSON.parse(__firebase_config) : myFirebaseConfig;
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
+    const app =
+      initializeApp(
+        firebaseConfig
+      );
+
+
+    const auth =
+      getAuth(
+        app
+      );
+
+
+    const db =
+      getFirestore(
+        app
+      );
+
+
+    const storage =
+      getStorage(
+        app
+      );
+
+
+    /* =========================================================
+       共有ID
+    ========================================================= */
+
+    let shareId =
+      new URLSearchParams(
+        window.location.search
+      ).get('uid');
+
+
+    if (!shareId) {
+
+      shareId =
+        'fam_' +
+        crypto
+          .randomUUID()
+          .replaceAll('-', '')
+          .slice(0, 20);
+
+
+      const newUrl =
+        window.location.protocol +
+        "//" +
+        window.location.host +
+        window.location.pathname +
+        '?uid=' +
+        encodeURIComponent(
+          shareId
+        );
+
+
+      window.history.replaceState(
+        {},
+        '',
+        newUrl
+      );
+    }
+
+
+    /* =========================================================
+       localStorage
+       共有IDごとに選択メンバーを保存
+    ========================================================= */
+
+    const memberStorageKey =
+      `family_shopping_selected_member_${shareId}`;
+
+
+    let selectedMemberId =
+      localStorage.getItem(
+        memberStorageKey
+      ) || null;
+
+
+    /* =========================================================
+       定数
+    ========================================================= */
 
     const COLOR_PRESETS = [
-      { name: 'ストーン', bg: 'bg-stone-100', text: 'text-stone-600' },
-      { name: 'セージ', bg: 'bg-emerald-50', text: 'text-emerald-700' },
-      { name: 'テラコッタ', bg: 'bg-orange-50', text: 'text-orange-700' },
-      { name: 'ラベンダー', bg: 'bg-purple-50', text: 'text-purple-700' },
-      { name: 'サンド', bg: 'bg-amber-50', text: 'text-amber-800' },
-      { name: 'スレート', bg: 'bg-sky-50', text: 'text-sky-700' }
-    ];
-    let selectedColorIndex = 0;
 
-    let shareId = new URLSearchParams(window.location.search).get('uid');
-    let currentItems = [];
-    let currentMembers = [];
-    let selectedMemberId = localStorage.getItem('family_shopping_selected_member') || null;
-    let currentImageBase64 = null;
-    let unsubscribeItems = null;
-    let unsubscribeMembers = null;
+      {
+        name: 'ストーン',
+        bg: 'bg-stone-100',
+        text: 'text-stone-600'
+      },
 
-    const getListCol = () => isCanvas 
-      ? collection(db, 'artifacts', canvasAppId, 'public', 'data', `list_${shareId}`) 
-      : collection(db, 'shopping_lists', shareId, 'items');
-    
-    const getMembersCol = () => isCanvas 
-      ? collection(db, 'artifacts', canvasAppId, 'public', 'data', `members_${shareId}`) 
-      : collection(db, 'shopping_lists', shareId, 'members');
-    
-    const getListItemDoc = (id) => isCanvas 
-      ? doc(db, 'artifacts', canvasAppId, 'public', 'data', `list_${shareId}`, id) 
-      : doc(db, 'shopping_lists', shareId, 'items', id);
-    
-    const getMemberDoc = (id) => isCanvas 
-      ? doc(db, 'artifacts', canvasAppId, 'public', 'data', `members_${shareId}`, id) 
-      : doc(db, 'shopping_lists', shareId, 'members', id);
+      {
+        name: 'セージ',
+        bg: 'bg-emerald-50',
+        text: 'text-emerald-700'
+      },
 
-    const showToast = (msg) => {
-      const toast = document.getElementById('toast');
-      toast.textContent = msg;
-      toast.classList.remove('hidden');
-      setTimeout(() => toast.classList.add('hidden'), 3000);
-    };
+      {
+        name: 'テラコッタ',
+        bg: 'bg-orange-50',
+        text: 'text-orange-700'
+      },
 
-    const escapeHtml = (str) => {
-      if (!str) return '';
-      return str.replace(/[&<>'"]/g, tag => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'}[tag]));
-    };
+      {
+        name: 'ラベンダー',
+        bg: 'bg-purple-50',
+        text: 'text-purple-700'
+      },
 
-    const formatDate = (timestamp) => {
-      if (!timestamp) return '';
-      const date = new Date(timestamp);
-      const m = date.getMonth() + 1;
-      const d = date.getDate();
-      const h = String(date.getHours()).padStart(2, '0');
-      const min = String(date.getMinutes()).padStart(2, '0');
-      return `${m}/${d} ${h}:${min}`;
-    };
+      {
+        name: 'サンド',
+        bg: 'bg-amber-50',
+        text: 'text-amber-800'
+      },
 
-    let confirmAction = null;
-    const showConfirm = (message, onOk) => {
-      document.getElementById('confirm-message').textContent = message;
-      confirmAction = onOk;
-      document.getElementById('confirm-modal').classList.remove('hidden');
-    };
-    document.getElementById('confirm-cancel').onclick = () => document.getElementById('confirm-modal').classList.add('hidden');
-    document.getElementById('confirm-ok').onclick = () => {
-      if (confirmAction) confirmAction();
-      document.getElementById('confirm-modal').classList.add('hidden');
-    };
-
-    const resizeImage = (file) => {
-      return new Promise((resolve) => {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          const img = new Image();
-          img.onload = () => {
-            const canvas = document.createElement('canvas');
-            const MAX_SIZE = 500; 
-            let { width, height } = img;
-            if (width > height && width > MAX_SIZE) {
-              height *= MAX_SIZE / width; width = MAX_SIZE;
-            } else if (height > MAX_SIZE) {
-              width *= MAX_SIZE / height; height = MAX_SIZE;
-            }
-            canvas.width = width; canvas.height = height;
-            const ctx = canvas.getContext('2d');
-            ctx.drawImage(img, 0, 0, width, height);
-            resolve(canvas.toDataURL('image/jpeg', 0.6));
-          };
-          img.src = e.target.result;
-        };
-        reader.readAsDataURL(file);
-      });
-    };
-
-    const renderColorPalette = () => {
-      const palette = document.getElementById('color-palette');
-      palette.innerHTML = '';
-      COLOR_PRESETS.forEach((preset, idx) => {
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.className = `w-7 h-7 rounded-full transition-all ${preset.bg} border-2 ${selectedColorIndex === idx ? 'border-stone-800 scale-110 shadow-sm' : 'border-transparent opacity-70 hover:opacity-100'}`;
-        btn.onclick = () => {
-          selectedColorIndex = idx;
-          renderColorPalette();
-        };
-        palette.appendChild(btn);
-      });
-    };
-
-    const renderList = () => {
-      const container = document.getElementById('list-container');
-      
-      const sorted = [...currentItems].sort((a, b) => {
-        if (a.completed === b.completed) return a.createdAt - b.createdAt;
-        return a.completed ? 1 : -1;
-      });
-
-      if (sorted.length === 0) {
-        container.innerHTML = `<div class="text-center text-stone-400 mt-16 text-xs">メモはありません<br>下の入力欄から追加しましょう</div>`;
-        lucide.createIcons();
-        return;
+      {
+        name: 'スレート',
+        bg: 'bg-sky-50',
+        text: 'text-sky-700'
       }
 
-      container.innerHTML = '';
-      sorted.forEach(item => {
-        const member = currentMembers.find(m => m.id === item.memberId);
-        const memberName = member ? member.name : '不明';
-        const colorPreset = COLOR_PRESETS[member?.colorIndex ?? 0] || COLOR_PRESETS[0];
-        const dateStr = formatDate(item.createdAt);
-        
-        const div = document.createElement('div');
-        div.dataset.id = item.id;
-        div.className = `memo-card p-3 rounded-2xl flex items-start gap-2.5 ${item.completed ? 'bg-stone-100/50 opacity-60 scale-[0.99]' : 'bg-white shadow-sm border border-stone-100/40'}`;
-        
-        let imgHtml = '';
-        if (item.imageUrl) {
-          imgHtml = `<img src="${item.imageUrl}" onclick="window.openImage('${item.imageUrl}')" class="mt-2 w-14 h-14 object-cover rounded-xl border border-stone-200 cursor-pointer shadow-sm active:scale-95 transition-transform">`;
-        }
+    ];
 
-        div.innerHTML = `
-          <button onclick="window.toggleItem('${item.id}', ${item.completed})" class="flex-shrink-0 mt-0.5 w-5 h-5 rounded-full border-[2px] flex items-center justify-center transition-all ${item.completed ? 'bg-stone-400 border-stone-400' : 'border-stone-300 hover:border-stone-400'}">
-            ${item.completed ? '<i data-lucide="check" class="w-3 h-3 text-white"></i>' : ''}
-          </button>
-          <div class="flex-1 min-w-0 pt-0">
-            <p class="text-xs sm:text-sm leading-snug break-words font-medium transition-all ${item.completed ? 'text-stone-400 line-through' : 'text-stone-700'}">${escapeHtml(item.text)}</p>
-            ${imgHtml}
-            <div class="mt-2 flex items-center justify-between gap-2">
-              <div class="flex items-center gap-1.5">
-                <span class="text-[9px] ${colorPreset.bg} ${colorPreset.text} px-2 py-0.5 rounded-md font-bold">${escapeHtml(memberName)}</span>
-                <span class="text-[9px] text-stone-400">${dateStr}</span>
-              </div>
-            </div>
-          </div>
-          <button onclick="window.deleteItem('${item.id}')" class="flex-shrink-0 p-1 -mt-0.5 -mr-1 text-stone-300 hover:text-red-400 active:scale-90 transition-all">
-            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-          </button>
-        `;
-        container.appendChild(div);
-      });
-      lucide.createIcons();
-    };
 
-    const updateMemberUI = () => {
-      // メンバーを order 順にソート
-      currentMembers.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+    let selectedColorIndex = 0;
 
-      const horizontalList = document.getElementById('member-horizontal-list');
-      horizontalList.innerHTML = '';
-      
-      currentMembers.forEach(m => {
-        const isSelected = m.id === selectedMemberId;
-        const colorPreset = COLOR_PRESETS[m.colorIndex ?? 0] || COLOR_PRESETS[0];
-        
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.className = `flex-shrink-0 px-3.5 py-1.5 rounded-full text-[11px] font-bold transition-all ${
-          isSelected 
-            ? 'bg-stone-800 text-white shadow-sm' 
-            : `${colorPreset.bg} ${colorPreset.text} opacity-90 hover:opacity-100`
-        }`;
-        btn.textContent = m.name;
-        btn.onclick = () => {
-          selectedMemberId = m.id;
-          localStorage.setItem('family_shopping_selected_member', m.id);
-          updateMemberUI();
-        };
-        horizontalList.appendChild(btn);
-      });
+    let currentItems = [];
+    let currentMembers = [];
 
-      const settingsList = document.getElementById('settings-member-list');
-      settingsList.innerHTML = '';
-      
-      currentMembers.forEach((m, index) => {
-        const colorPreset = COLOR_PRESETS[m.colorIndex ?? 0] || COLOR_PRESETS[0];
-        const li = document.createElement('li');
-        li.className = 'flex items-center justify-between p-3.5 bg-white w-full';
-        
-        // 並び替えボタンの有効・無効制御
-        const isFirst = index === 0;
-        const isLast = index === currentMembers.length - 1;
+    let currentImageBlob = null;
+    let currentImagePreviewUrl = null;
 
-        li.innerHTML = `
-          <div class="flex items-center gap-2 min-w-0 flex-1 mr-2">
-            <span class="w-3 h-3 rounded-full ${colorPreset.bg} border border-stone-200 flex-shrink-0"></span>
-            <span class="font-medium text-stone-700 truncate">${escapeHtml(m.name)}</span>
-          </div>
-          <div class="flex items-center gap-1 flex-shrink-0">
-            <button type="button" onclick="window.moveMember('${m.id}', 'up')" class="p-1.5 text-stone-400 hover:text-stone-700 rounded-md bg-stone-50 ${isFirst ? 'opacity-30 cursor-not-allowed' : ''}" ${isFirst ? 'disabled' : ''}>
-              <i data-lucide="chevron-up" class="w-4 h-4"></i>
-            </button>
-            <button type="button" onclick="window.moveMember('${m.id}', 'down')" class="p-1.5 text-stone-400 hover:text-stone-700 rounded-md bg-stone-50 ${isLast ? 'opacity-30 cursor-not-allowed' : ''}" ${isLast ? 'disabled' : ''}>
-              <i data-lucide="chevron-down" class="w-4 h-4"></i>
-            </button>
-            <button type="button" onclick="window.deleteMember('${m.id}')" class="p-1.5 text-stone-300 hover:text-red-400 rounded-full transition-colors ml-1 ${currentMembers.length <= 1 ? 'opacity-30 cursor-not-allowed' : ''}" ${currentMembers.length <= 1 ? 'disabled' : ''}>
-              <i data-lucide="trash-2" class="w-4 h-4"></i>
-            </button>
-          </div>
-        `;
-        settingsList.appendChild(li);
-      });
-      lucide.createIcons();
-    };
+    let unsubscribeItems = null;
+    let unsubscribeMembers = null;
 
     let isMembersLoaded = false;
     let isItemsLoaded = false;
 
-    const hideLoading = () => {
-      const loader = document.getElementById('initial-loading');
-      if (loader && !loader.classList.contains('hidden')) {
-        loader.style.opacity = '0';
-        setTimeout(() => loader.classList.add('hidden'), 300);
+    let confirmAction = null;
+
+
+    /* =========================================================
+       Firestoreパス
+    ========================================================= */
+
+    const getListCol =
+      () =>
+        collection(
+          db,
+          'shopping_lists',
+          shareId,
+          'items'
+        );
+
+
+    const getMembersCol =
+      () =>
+        collection(
+          db,
+          'shopping_lists',
+          shareId,
+          'members'
+        );
+
+
+    const getListItemDoc =
+      id =>
+        doc(
+          db,
+          'shopping_lists',
+          shareId,
+          'items',
+          id
+        );
+
+
+    const getMemberDoc =
+      id =>
+        doc(
+          db,
+          'shopping_lists',
+          shareId,
+          'members',
+          id
+        );
+
+
+    /* =========================================================
+       ズーム防止
+    ========================================================= */
+
+    document.addEventListener(
+      'gesturestart',
+      event => {
+        event.preventDefault();
+      },
+      {
+        passive: false
       }
-    };
+    );
 
-    const startSubscriptions = () => {
-      if (unsubscribeItems) unsubscribeItems();
-      if (unsubscribeMembers) unsubscribeMembers();
 
-      unsubscribeMembers = onSnapshot(getMembersCol(), (snapshot) => {
-        currentMembers = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-        
-        if (currentMembers.length === 0) {
-          addDoc(getMembersCol(), { name: "自分", colorIndex: 0, order: 0, createdAt: Date.now() }).then(ref => {
-            selectedMemberId = ref.id;
-            localStorage.setItem('family_shopping_selected_member', ref.id);
-          });
-        } else {
-          if (!selectedMemberId || !currentMembers.some(m => m.id === selectedMemberId)) {
-            currentMembers.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
-            selectedMemberId = currentMembers[0].id;
-            localStorage.setItem('family_shopping_selected_member', selectedMemberId);
+    document.addEventListener(
+      'gesturechange',
+      event => {
+        event.preventDefault();
+      },
+      {
+        passive: false
+      }
+    );
+
+
+    document.addEventListener(
+      'gestureend',
+      event => {
+        event.preventDefault();
+      },
+      {
+        passive: false
+      }
+    );
+
+
+    let lastTouchEnd = 0;
+
+
+    document.addEventListener(
+      'touchend',
+      event => {
+
+        const now =
+          Date.now();
+
+
+        if (
+          now - lastTouchEnd <= 300
+        ) {
+          event.preventDefault();
+        }
+
+
+        lastTouchEnd =
+          now;
+      },
+      {
+        passive: false
+      }
+    );
+
+
+    document.addEventListener(
+      'dblclick',
+      event => {
+        event.preventDefault();
+      },
+      {
+        passive: false
+      }
+    );
+
+
+    /* =========================================================
+       Toast
+    ========================================================= */
+
+    let toastTimer = null;
+
+
+    const showToast =
+      msg => {
+
+        const toast =
+          document.getElementById(
+            'toast'
+          );
+
+
+        if (toastTimer) {
+          clearTimeout(
+            toastTimer
+          );
+        }
+
+
+        toast.textContent =
+          msg;
+
+
+        toast.classList.remove(
+          'hidden'
+        );
+
+
+        toastTimer =
+          setTimeout(
+            () => {
+
+              toast.classList.add(
+                'hidden'
+              );
+
+            },
+            3000
+          );
+      };
+
+
+    /* =========================================================
+       Escape
+    ========================================================= */
+
+    const escapeHtml =
+      value => {
+
+        if (
+          value === null ||
+          value === undefined
+        ) {
+          return '';
+        }
+
+
+        return String(value)
+          .replace(
+            /[&<>'"]/g,
+            tag => ({
+              '&': '&amp;',
+              '<': '&lt;',
+              '>': '&gt;',
+              "'": '&#39;',
+              '"': '&quot;'
+            }[tag])
+          );
+      };
+
+
+    /* =========================================================
+       日付
+    ========================================================= */
+
+    const formatDate =
+      timestamp => {
+
+        if (!timestamp) {
+          return '';
+        }
+
+
+        const date =
+          new Date(
+            timestamp
+          );
+
+
+        const m =
+          date.getMonth() + 1;
+
+
+        const d =
+          date.getDate();
+
+
+        const h =
+          String(
+            date.getHours()
+          ).padStart(
+            2,
+            '0'
+          );
+
+
+        const min =
+          String(
+            date.getMinutes()
+          ).padStart(
+            2,
+            '0'
+          );
+
+
+        return `${m}/${d} ${h}:${min}`;
+      };
+
+
+    /* =========================================================
+       Confirm
+    ========================================================= */
+
+    const showConfirm =
+      (
+        message,
+        onOk
+      ) => {
+
+        document
+          .getElementById(
+            'confirm-message'
+          )
+          .textContent =
+          message;
+
+
+        confirmAction =
+          onOk;
+
+
+        document
+          .getElementById(
+            'confirm-modal'
+          )
+          .classList
+          .remove(
+            'hidden'
+          );
+      };
+
+
+    document
+      .getElementById(
+        'confirm-cancel'
+      )
+      .onclick =
+      () => {
+
+        confirmAction =
+          null;
+
+        document
+          .getElementById(
+            'confirm-modal'
+          )
+          .classList
+          .add(
+            'hidden'
+          );
+      };
+
+
+    document
+      .getElementById(
+        'confirm-ok'
+      )
+      .onclick =
+      async () => {
+
+        const action =
+          confirmAction;
+
+
+        confirmAction =
+          null;
+
+
+        document
+          .getElementById(
+            'confirm-modal'
+          )
+          .classList
+          .add(
+            'hidden'
+          );
+
+
+        if (action) {
+
+          try {
+
+            await action();
+
+          }
+          catch (error) {
+
+            console.error(
+              error
+            );
           }
         }
-        
-        updateMemberUI();
-        isMembersLoaded = true;
-        if (isItemsLoaded) hideLoading();
-      }, (err) => {
-        console.error(err);
-        isMembersLoaded = true;
-        if (isItemsLoaded) hideLoading();
-      });
+      };
 
-      unsubscribeItems = onSnapshot(getListCol(), (snapshot) => {
-        currentItems = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-        renderList();
-        
-        isItemsLoaded = true;
-        if (isMembersLoaded) hideLoading();
-      }, (err) => {
-        console.error(err);
-        isItemsLoaded = true;
-        if (isMembersLoaded) hideLoading();
-      });
-    };
 
-    window.toggleItem = (id, currentStatus) => {
-      if (!auth.currentUser) return;
-      updateDoc(getListItemDoc(id), { completed: !currentStatus }).catch(() => showToast("更新に失敗しました"));
-    };
+    /* =========================================================
+       画像リサイズ
+    ========================================================= */
 
-    window.deleteItem = (id) => {
-      if (!auth.currentUser) return;
-      showConfirm("このメモを削除しますか？", () => {
-        deleteDoc(getListItemDoc(id)).catch(() => showToast("削除に失敗しました"));
-      });
-    };
+    const resizeImage =
+      file => {
 
-    window.deleteMember = (id) => {
-      if (!auth.currentUser) return;
-      if (currentMembers.length <= 1) {
-        showToast("入力者は最低1人必要です");
-        return;
-      }
-      showConfirm("この入力者を削除しますか？\n(過去のメモの表示は「不明」になります)", () => {
-        deleteDoc(getMemberDoc(id)).then(() => {
-          if (selectedMemberId === id) {
-            const remaining = currentMembers.filter(m => m.id !== id);
-            if (remaining.length > 0) {
-              selectedMemberId = remaining[0].id;
-              localStorage.setItem('family_shopping_selected_member', selectedMemberId);
+        return new Promise(
+          (
+            resolve,
+            reject
+          ) => {
+
+            const reader =
+              new FileReader();
+
+
+            reader.onerror =
+              () =>
+                reject(
+                  new Error(
+                    '画像の読み込みに失敗しました'
+                  )
+                );
+
+
+            reader.onload =
+              event => {
+
+                const img =
+                  new Image();
+
+
+                img.onerror =
+                  () =>
+                    reject(
+                      new Error(
+                        '画像を開けませんでした'
+                      )
+                    );
+
+
+                img.onload =
+                  () => {
+
+                    const canvas =
+                      document.createElement(
+                        'canvas'
+                      );
+
+
+                    const MAX_SIZE =
+                      500;
+
+
+                    let width =
+                      img.width;
+
+
+                    let height =
+                      img.height;
+
+
+                    if (
+                      width > height &&
+                      width > MAX_SIZE
+                    ) {
+
+                      height *=
+                        MAX_SIZE /
+                        width;
+
+
+                      width =
+                        MAX_SIZE;
+
+                    }
+                    else if (
+                      height > MAX_SIZE
+                    ) {
+
+                      width *=
+                        MAX_SIZE /
+                        height;
+
+
+                      height =
+                        MAX_SIZE;
+                    }
+
+
+                    canvas.width =
+                      Math.round(
+                        width
+                      );
+
+
+                    canvas.height =
+                      Math.round(
+                        height
+                      );
+
+
+                    const ctx =
+                      canvas.getContext(
+                        '2d'
+                      );
+
+
+                    ctx.drawImage(
+                      img,
+                      0,
+                      0,
+                      canvas.width,
+                      canvas.height
+                    );
+
+
+                    canvas.toBlob(
+                      blob => {
+
+                        if (!blob) {
+
+                          reject(
+                            new Error(
+                              '画像の変換に失敗しました'
+                            )
+                          );
+
+                          return;
+                        }
+
+
+                        resolve(
+                          blob
+                        );
+                      },
+                      'image/jpeg',
+                      0.6
+                    );
+                  };
+
+
+                img.src =
+                  event.target.result;
+              };
+
+
+            reader.readAsDataURL(
+              file
+            );
+          }
+        );
+      };
+
+
+    /* =========================================================
+       Storageアップロード
+    ========================================================= */
+
+    const uploadImage =
+      async blob => {
+
+        if (
+          !auth.currentUser
+        ) {
+          throw new Error(
+            '未認証です'
+          );
+        }
+
+
+        const fileId =
+          crypto
+            .randomUUID()
+            .replaceAll(
+              '-',
+              ''
+            );
+
+
+        const storagePath =
+          `shopping_lists/${shareId}/${fileId}.jpg`;
+
+
+        const storageRef =
+          ref(
+            storage,
+            storagePath
+          );
+
+
+        await uploadBytes(
+          storageRef,
+          blob,
+          {
+            contentType:
+              'image/jpeg'
+          }
+        );
+
+
+        const downloadUrl =
+          await getDownloadURL(
+            storageRef
+          );
+
+
+        return {
+          downloadUrl,
+          storagePath
+        };
+      };
+
+
+    /* =========================================================
+       カラーパレット
+    ========================================================= */
+
+    const renderColorPalette =
+      () => {
+
+        const palette =
+          document.getElementById(
+            'color-palette'
+          );
+
+
+        palette.innerHTML =
+          '';
+
+
+        COLOR_PRESETS.forEach(
+          (
+            preset,
+            idx
+          ) => {
+
+            const btn =
+              document.createElement(
+                'button'
+              );
+
+
+            btn.type =
+              'button';
+
+
+            btn.title =
+              preset.name;
+
+
+            btn.className =
+              `
+                w-7
+                h-7
+                rounded-full
+                transition-all
+                ${preset.bg}
+                border-2
+                ${
+                  selectedColorIndex === idx
+                    ? 'border-stone-800 scale-110 shadow-sm'
+                    : 'border-transparent opacity-70 hover:opacity-100'
+                }
+              `;
+
+
+            btn.onclick =
+              () => {
+
+                selectedColorIndex =
+                  idx;
+
+                renderColorPalette();
+              };
+
+
+            palette.appendChild(
+              btn
+            );
+          }
+        );
+      };
+
+
+    /* =========================================================
+       リスト描画
+    ========================================================= */
+
+    const renderList =
+      () => {
+
+        const container =
+          document.getElementById(
+            'list-container'
+          );
+
+
+        const sorted =
+          [...currentItems]
+            .sort(
+              (
+                a,
+                b
+              ) => {
+
+                if (
+                  a.completed ===
+                  b.completed
+                ) {
+
+                  return (
+                    Number(
+                      a.createdAt || 0
+                    ) -
+                    Number(
+                      b.createdAt || 0
+                    )
+                  );
+                }
+
+
+                return a.completed
+                  ? 1
+                  : -1;
+              }
+            );
+
+
+        if (
+          sorted.length === 0
+        ) {
+
+          container.innerHTML = `
+            <div
+              class="
+                text-center
+                text-stone-400
+                mt-16
+                text-xs
+              "
+            >
+              メモはありません
+              <br>
+              下の入力欄から追加しましょう
+            </div>
+          `;
+
+
+          lucide.createIcons();
+
+          return;
+        }
+
+
+        container.innerHTML =
+          '';
+
+
+        sorted.forEach(
+          item => {
+
+            const member =
+              currentMembers.find(
+                member =>
+                  member.id ===
+                  item.memberId
+              );
+
+
+            const memberName =
+              member
+                ? member.name
+                : '不明';
+
+
+            const colorPreset =
+              COLOR_PRESETS[
+                member?.colorIndex ?? 0
+              ] ||
+              COLOR_PRESETS[0];
+
+
+            const dateStr =
+              formatDate(
+                item.createdAt
+              );
+
+
+            const div =
+              document.createElement(
+                'div'
+              );
+
+
+            div.dataset.id =
+              item.id;
+
+
+            div.className =
+              `
+                memo-card
+                p-3
+                rounded-2xl
+                flex
+                items-start
+                gap-2.5
+                ${
+                  item.completed
+                    ? 'bg-stone-100/50 opacity-60 scale-[0.99]'
+                    : 'bg-white shadow-sm border border-stone-100/40'
+                }
+              `;
+
+
+            let imgHtml =
+              '';
+
+
+            if (
+              item.imageUrl
+            ) {
+
+              imgHtml = `
+                <img
+                  src="${escapeHtml(item.imageUrl)}"
+                  data-image-url="${escapeHtml(item.imageUrl)}"
+                  class="
+                    shopping-image
+                    mt-2
+                    w-14
+                    h-14
+                    object-cover
+                    rounded-xl
+                    border
+                    border-stone-200
+                    cursor-pointer
+                    shadow-sm
+                    active:scale-95
+                    transition-transform
+                  "
+                  alt=""
+                >
+              `;
+            }
+
+
+            div.innerHTML = `
+
+              <button
+                type="button"
+                data-toggle-id="${escapeHtml(item.id)}"
+                data-toggle-status="${item.completed ? 'true' : 'false'}"
+                class="
+                  toggle-item-btn
+                  flex-shrink-0
+                  mt-0.5
+                  w-5
+                  h-5
+                  rounded-full
+                  border-[2px]
+                  flex
+                  items-center
+                  justify-center
+                  transition-all
+                  ${
+                    item.completed
+                      ? 'bg-stone-400 border-stone-400'
+                      : 'border-stone-300 hover:border-stone-400'
+                  }
+                "
+              >
+
+                ${
+                  item.completed
+                    ? '<i data-lucide="check" class="w-3 h-3 text-white"></i>'
+                    : ''
+                }
+
+              </button>
+
+
+              <div
+                class="
+                  flex-1
+                  min-w-0
+                  pt-0
+                "
+              >
+
+                <p
+                  class="
+                    text-xs
+                    sm:text-sm
+                    leading-snug
+                    break-words
+                    font-medium
+                    transition-all
+                    ${
+                      item.completed
+                        ? 'text-stone-400 line-through'
+                        : 'text-stone-700'
+                    }
+                  "
+                >
+                  ${escapeHtml(item.text)}
+                </p>
+
+
+                ${imgHtml}
+
+
+                <div
+                  class="
+                    mt-2
+                    flex
+                    items-center
+                    justify-between
+                    gap-2
+                  "
+                >
+
+                  <div
+                    class="
+                      flex
+                      items-center
+                      gap-1.5
+                      min-w-0
+                    "
+                  >
+
+                    <span
+                      class="
+                        text-[9px]
+                        ${colorPreset.bg}
+                        ${colorPreset.text}
+                        px-2
+                        py-0.5
+                        rounded-md
+                        font-bold
+                        shrink-0
+                      "
+                    >
+                      ${escapeHtml(memberName)}
+                    </span>
+
+
+                    <span
+                      class="
+                        text-[9px]
+                        text-stone-400
+                        truncate
+                      "
+                    >
+                      ${escapeHtml(dateStr)}
+                    </span>
+
+                  </div>
+
+                </div>
+
+              </div>
+
+
+              <button
+                type="button"
+                data-delete-id="${escapeHtml(item.id)}"
+                class="
+                  delete-item-btn
+                  flex-shrink-0
+                  p-1
+                  -mt-0.5
+                  -mr-1
+                  text-stone-300
+                  hover:text-red-400
+                  active:scale-90
+                  transition-all
+                "
+              >
+                <i
+                  data-lucide="trash-2"
+                  class="w-3.5 h-3.5"
+                ></i>
+              </button>
+            `;
+
+
+            container.appendChild(
+              div
+            );
+          }
+        );
+
+
+        container
+          .querySelectorAll(
+            '.toggle-item-btn'
+          )
+          .forEach(
+            button => {
+
+              button.addEventListener(
+                'click',
+                () => {
+
+                  const id =
+                    button.dataset.toggleId;
+
+
+                  const status =
+                    button.dataset.toggleStatus ===
+                    'true';
+
+
+                  window.toggleItem(
+                    id,
+                    status
+                  );
+                }
+              );
+            }
+          );
+
+
+        container
+          .querySelectorAll(
+            '.delete-item-btn'
+          )
+          .forEach(
+            button => {
+
+              button.addEventListener(
+                'click',
+                () => {
+
+                  window.deleteItem(
+                    button.dataset.deleteId
+                  );
+                }
+              );
+            }
+          );
+
+
+        container
+          .querySelectorAll(
+            '.shopping-image'
+          )
+          .forEach(
+            image => {
+
+              image.addEventListener(
+                'click',
+                () => {
+
+                  window.openImage(
+                    image.dataset.imageUrl
+                  );
+                }
+              );
+            }
+          );
+
+
+        lucide.createIcons();
+      };
+
+
+    /* =========================================================
+       メンバーUI
+    ========================================================= */
+
+    const updateMemberUI =
+      () => {
+
+        currentMembers.sort(
+          (
+            a,
+            b
+          ) =>
+            Number(
+              a.order ?? 0
+            ) -
+            Number(
+              b.order ?? 0
+            )
+        );
+
+
+        const horizontalList =
+          document.getElementById(
+            'member-horizontal-list'
+          );
+
+
+        horizontalList.innerHTML =
+          '';
+
+
+        currentMembers.forEach(
+          member => {
+
+            const isSelected =
+              member.id ===
+              selectedMemberId;
+
+
+            const colorPreset =
+              COLOR_PRESETS[
+                member.colorIndex ?? 0
+              ] ||
+              COLOR_PRESETS[0];
+
+
+            const btn =
+              document.createElement(
+                'button'
+              );
+
+
+            btn.type =
+              'button';
+
+
+            btn.className =
+              `
+                flex-shrink-0
+                px-3.5
+                py-1.5
+                rounded-full
+                text-[11px]
+                font-bold
+                transition-all
+                ${
+                  isSelected
+                    ? 'bg-stone-800 text-white shadow-sm'
+                    : `${colorPreset.bg} ${colorPreset.text} opacity-90 hover:opacity-100`
+                }
+              `;
+
+
+            btn.textContent =
+              member.name;
+
+
+            btn.onclick =
+              () => {
+
+                selectedMemberId =
+                  member.id;
+
+
+                localStorage.setItem(
+                  memberStorageKey,
+                  member.id
+                );
+
+
+                updateMemberUI();
+              };
+
+
+            horizontalList.appendChild(
+              btn
+            );
+          }
+        );
+
+
+        const settingsList =
+          document.getElementById(
+            'settings-member-list'
+          );
+
+
+        settingsList.innerHTML =
+          '';
+
+
+        currentMembers.forEach(
+          (
+            member,
+            index
+          ) => {
+
+            const colorPreset =
+              COLOR_PRESETS[
+                member.colorIndex ?? 0
+              ] ||
+              COLOR_PRESETS[0];
+
+
+            const li =
+              document.createElement(
+                'li'
+              );
+
+
+            li.className =
+              `
+                flex
+                items-center
+                justify-between
+                p-3.5
+                bg-white
+                w-full
+              `;
+
+
+            const isFirst =
+              index === 0;
+
+
+            const isLast =
+              index ===
+              currentMembers.length - 1;
+
+
+            li.innerHTML = `
+
+              <div
+                class="
+                  flex
+                  items-center
+                  gap-2
+                  min-w-0
+                  flex-1
+                  mr-2
+                "
+              >
+
+                <span
+                  class="
+                    w-3
+                    h-3
+                    rounded-full
+                    ${colorPreset.bg}
+                    border
+                    border-stone-200
+                    flex-shrink-0
+                  "
+                ></span>
+
+
+                <span
+                  class="
+                    font-medium
+                    text-stone-700
+                    truncate
+                  "
+                >
+                  ${escapeHtml(member.name)}
+                </span>
+
+              </div>
+
+
+              <div
+                class="
+                  flex
+                  items-center
+                  gap-1
+                  flex-shrink-0
+                "
+              >
+
+                <button
+                  type="button"
+                  data-member-id="${escapeHtml(member.id)}"
+                  data-direction="up"
+                  class="
+                    move-member-btn
+                    p-1.5
+                    text-stone-400
+                    hover:text-stone-700
+                    rounded-md
+                    bg-stone-50
+                    ${
+                      isFirst
+                        ? 'opacity-30 cursor-not-allowed'
+                        : ''
+                    }
+                  "
+                  ${
+                    isFirst
+                      ? 'disabled'
+                      : ''
+                  }
+                >
+                  <i
+                    data-lucide="chevron-up"
+                    class="w-4 h-4"
+                  ></i>
+                </button>
+
+
+                <button
+                  type="button"
+                  data-member-id="${escapeHtml(member.id)}"
+                  data-direction="down"
+                  class="
+                    move-member-btn
+                    p-1.5
+                    text-stone-400
+                    hover:text-stone-700
+                    rounded-md
+                    bg-stone-50
+                    ${
+                      isLast
+                        ? 'opacity-30 cursor-not-allowed'
+                        : ''
+                    }
+                  "
+                  ${
+                    isLast
+                      ? 'disabled'
+                      : ''
+                  }
+                >
+                  <i
+                    data-lucide="chevron-down"
+                    class="w-4 h-4"
+                  ></i>
+                </button>
+
+
+                <button
+                  type="button"
+                  data-member-delete="${escapeHtml(member.id)}"
+                  class="
+                    delete-member-btn
+                    p-1.5
+                    text-stone-300
+                    hover:text-red-400
+                    rounded-full
+                    transition-colors
+                    ml-1
+                    ${
+                      currentMembers.length <= 1
+                        ? 'opacity-30 cursor-not-allowed'
+                        : ''
+                    }
+                  "
+                  ${
+                    currentMembers.length <= 1
+                      ? 'disabled'
+                      : ''
+                  }
+                >
+                  <i
+                    data-lucide="trash-2"
+                    class="w-4 h-4"
+                  ></i>
+                </button>
+
+              </div>
+            `;
+
+
+            settingsList.appendChild(
+              li
+            );
+          }
+        );
+
+
+        settingsList
+          .querySelectorAll(
+            '.move-member-btn'
+          )
+          .forEach(
+            button => {
+
+              button.addEventListener(
+                'click',
+                () => {
+
+                  window.moveMember(
+                    button.dataset.memberId,
+                    button.dataset.direction
+                  );
+                }
+              );
+            }
+          );
+
+
+        settingsList
+          .querySelectorAll(
+            '.delete-member-btn'
+          )
+          .forEach(
+            button => {
+
+              button.addEventListener(
+                'click',
+                () => {
+
+                  window.deleteMember(
+                    button.dataset.memberDelete
+                  );
+                }
+              );
+            }
+          );
+
+
+        lucide.createIcons();
+      };
+
+
+    /* =========================================================
+       Loading
+    ========================================================= */
+
+    const hideLoading =
+      () => {
+
+        const loader =
+          document.getElementById(
+            'initial-loading'
+          );
+
+
+        if (
+          !loader ||
+          loader.classList.contains(
+            'hidden'
+          )
+        ) {
+          return;
+        }
+
+
+        loader.style.opacity =
+          '0';
+
+
+        setTimeout(
+          () => {
+
+            loader.classList.add(
+              'hidden'
+            );
+
+          },
+          300
+        );
+      };
+
+
+    /* =========================================================
+       Firestore購読
+    ========================================================= */
+
+    const startSubscriptions =
+      () => {
+
+        if (
+          unsubscribeItems
+        ) {
+          unsubscribeItems();
+        }
+
+
+        if (
+          unsubscribeMembers
+        ) {
+          unsubscribeMembers();
+        }
+
+
+        unsubscribeMembers =
+          onSnapshot(
+
+            getMembersCol(),
+
+            async snapshot => {
+
+              currentMembers =
+                snapshot.docs.map(
+                  documentSnapshot => ({
+                    id:
+                      documentSnapshot.id,
+                    ...documentSnapshot.data()
+                  })
+                );
+
+
+              if (
+                currentMembers.length === 0
+              ) {
+
+                try {
+
+                  const ref =
+                    await addDoc(
+                      getMembersCol(),
+                      {
+                        name:
+                          "自分",
+
+                        colorIndex:
+                          0,
+
+                        order:
+                          0,
+
+                        createdAt:
+                          Date.now()
+                      }
+                    );
+
+
+                  selectedMemberId =
+                    ref.id;
+
+
+                  localStorage.setItem(
+                    memberStorageKey,
+                    ref.id
+                  );
+
+                }
+                catch (error) {
+
+                  console.error(
+                    error
+                  );
+
+                  showToast(
+                    '初期メンバーの作成に失敗しました'
+                  );
+                }
+
+              }
+              else {
+
+                if (
+                  !selectedMemberId ||
+                  !currentMembers.some(
+                    member =>
+                      member.id ===
+                      selectedMemberId
+                  )
+                ) {
+
+                  currentMembers.sort(
+                    (
+                      a,
+                      b
+                    ) =>
+                      Number(
+                        a.order ?? 0
+                      ) -
+                      Number(
+                        b.order ?? 0
+                      )
+                  );
+
+
+                  selectedMemberId =
+                    currentMembers[0].id;
+
+
+                  localStorage.setItem(
+                    memberStorageKey,
+                    selectedMemberId
+                  );
+                }
+              }
+
+
+              updateMemberUI();
+
+              renderList();
+
+
+              isMembersLoaded =
+                true;
+
+
+              if (
+                isItemsLoaded
+              ) {
+                hideLoading();
+              }
+            },
+
+            error => {
+
+              console.error(
+                'Members snapshot error:',
+                error
+              );
+
+
+              showToast(
+                `メンバー同期エラー: ${error.code || ''}`
+              );
+
+
+              isMembersLoaded =
+                true;
+
+
+              if (
+                isItemsLoaded
+              ) {
+                hideLoading();
+              }
+            }
+          );
+
+
+        unsubscribeItems =
+          onSnapshot(
+
+            getListCol(),
+
+            snapshot => {
+
+              currentItems =
+                snapshot.docs.map(
+                  documentSnapshot => ({
+                    id:
+                      documentSnapshot.id,
+                    ...documentSnapshot.data()
+                  })
+                );
+
+
+              renderList();
+
+
+              isItemsLoaded =
+                true;
+
+
+              if (
+                isMembersLoaded
+              ) {
+                hideLoading();
+              }
+            },
+
+            error => {
+
+              console.error(
+                'Items snapshot error:',
+                error
+              );
+
+
+              showToast(
+                `メモ同期エラー: ${error.code || ''}`
+              );
+
+
+              isItemsLoaded =
+                true;
+
+
+              if (
+                isMembersLoaded
+              ) {
+                hideLoading();
+              }
+            }
+          );
+      };
+
+
+    /* =========================================================
+       完了切替
+    ========================================================= */
+
+    window.toggleItem =
+      async (
+        id,
+        currentStatus
+      ) => {
+
+        if (
+          !auth.currentUser
+        ) {
+          return;
+        }
+
+
+        try {
+
+          await updateDoc(
+            getListItemDoc(
+              id
+            ),
+            {
+              completed:
+                !currentStatus
+            }
+          );
+
+        }
+        catch (error) {
+
+          console.error(
+            error
+          );
+
+
+          showToast(
+            '更新に失敗しました'
+          );
+        }
+      };
+
+
+    /* =========================================================
+       メモ削除
+       Storage画像も削除
+    ========================================================= */
+
+    window.deleteItem =
+      id => {
+
+        if (
+          !auth.currentUser
+        ) {
+          return;
+        }
+
+
+        const item =
+          currentItems.find(
+            current =>
+              current.id === id
+          );
+
+
+        showConfirm(
+          'このメモを削除しますか？',
+          async () => {
+
+            try {
+
+              await deleteDoc(
+                getListItemDoc(
+                  id
+                )
+              );
+
+
+              if (
+                item?.storagePath
+              ) {
+
+                try {
+
+                  await deleteObject(
+                    ref(
+                      storage,
+                      item.storagePath
+                    )
+                  );
+
+                }
+                catch (storageError) {
+
+                  console.warn(
+                    'Storage image delete failed:',
+                    storageError
+                  );
+                }
+              }
+
+            }
+            catch (error) {
+
+              console.error(
+                error
+              );
+
+
+              showToast(
+                '削除に失敗しました'
+              );
             }
           }
-        }).catch(() => showToast("削除に失敗しました"));
-      });
-    };
-
-    // 並び順変更関数
-    window.moveMember = (id, direction) => {
-      if (!auth.currentUser) return;
-      const index = currentMembers.findIndex(m => m.id === id);
-      if (index === -1) return;
-
-      const targetIndex = direction === 'up' ? index - 1 : index + 1;
-      if (targetIndex < 0 || targetIndex >= currentMembers.length) return;
-
-      // 要素の入れ替え
-      const temp = currentMembers[index];
-      currentMembers[index] = currentMembers[targetIndex];
-      currentMembers[targetIndex] = temp;
-
-      // 全員の order 情報を一括更新
-      currentMembers.forEach((m, idx) => {
-        updateDoc(getMemberDoc(m.id), { order: idx }).catch(() => {});
-      });
-      updateMemberUI();
-    };
-
-    window.openImage = (url) => {
-      const modal = document.getElementById('image-modal');
-      const img = document.getElementById('expanded-image');
-      img.src = url;
-      modal.classList.remove('hidden');
-      setTimeout(() => modal.classList.remove('opacity-0'), 10);
-    };
-
-    document.getElementById('add-form').onsubmit = (e) => {
-      e.preventDefault();
-      if (!auth.currentUser) return;
-      
-      const inputEl = document.getElementById('item-input');
-      const text = inputEl.value.trim();
-      if (!text && !currentImageBase64) return;
-      
-      if (!selectedMemberId && currentMembers.length > 0) {
-        selectedMemberId = currentMembers[0].id;
-      }
-
-      const btn = document.getElementById('submit-btn');
-      btn.disabled = true;
-
-      const newItem = {
-        text: text,
-        memberId: selectedMemberId,
-        completed: false,
-        createdAt: Date.now(),
-        imageUrl: currentImageBase64 || null
+        );
       };
-      
-      addDoc(getListCol(), newItem).then(() => {
-        inputEl.value = '';
-        document.getElementById('remove-image-btn').click();
-        setTimeout(() => {
-          const container = document.getElementById('list-container');
-          container.scrollTop = container.scrollHeight;
-        }, 100);
-      }).catch(() => {
-        showToast("追加に失敗しました");
-      }).finally(() => {
-        btn.disabled = false;
-      });
-    };
 
-    document.getElementById('trigger-image-btn').onclick = () => document.getElementById('image-input').click();
-    
-    document.getElementById('image-input').onchange = async (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-      
-      showToast("画像を処理中...");
-      try {
-        currentImageBase64 = await resizeImage(file);
-        document.getElementById('image-preview').src = currentImageBase64;
-        document.getElementById('image-preview-container').classList.remove('hidden');
-      } catch (err) {
-        showToast("画像の読み込みに失敗しました");
-      }
-      e.target.value = '';
-    };
 
-    document.getElementById('remove-image-btn').onclick = () => {
-      currentImageBase64 = null;
-      document.getElementById('image-preview-container').classList.add('hidden');
-      document.getElementById('image-preview').src = '';
-    };
+    /* =========================================================
+       メンバー削除
+    ========================================================= */
 
-    document.getElementById('open-settings-btn').onclick = () => {
-      renderColorPalette();
-      document.getElementById('settings-modal').classList.remove('hidden');
-    };
-    document.getElementById('close-settings').onclick = () => document.getElementById('settings-modal').classList.add('hidden');
+    window.deleteMember =
+      id => {
 
-    document.getElementById('add-member-btn').onclick = () => {
-      if (!auth.currentUser) return;
-      const input = document.getElementById('new-member-name');
-      const name = input.value.trim();
-      if (!name) return;
-      
-      const newOrder = currentMembers.length;
-      addDoc(getMembersCol(), { name: name, colorIndex: selectedColorIndex, order: newOrder, createdAt: Date.now() }).then((ref) => {
-        input.value = '';
-        selectedMemberId = ref.id;
-        localStorage.setItem('family_shopping_selected_member', ref.id);
-        showToast("入力者を追加しました");
-      }).catch(() => showToast("追加に失敗しました"));
-    };
-
-    document.getElementById('copy-url-btn').onclick = () => {
-      const url = window.location.protocol + "//" + window.location.host + window.location.pathname + '?uid=' + shareId;
-      const textArea = document.createElement("textarea");
-      textArea.value = url;
-      textArea.style.position = "fixed";
-      textArea.style.left = "-9999px";
-      document.body.appendChild(textArea);
-      textArea.focus();
-      textArea.select();
-      try {
-        document.execCommand('copy');
-        showToast("招待URLをコピーしました！");
-      } catch (err) {
-        showToast("コピーに失敗しました");
-      }
-      document.body.removeChild(textArea);
-    };
-
-    document.getElementById('image-modal').onclick = (e) => {
-      if(e.target.id === 'image-modal' || e.target.id === 'close-image-modal' || e.target.closest('#close-image-modal')) {
-        const modal = document.getElementById('image-modal');
-        modal.classList.add('opacity-0');
-        setTimeout(() => modal.classList.add('hidden'), 300);
-      }
-    };
-
-    const init = async () => {
-      lucide.createIcons();
-      try {
-        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-          await signInWithCustomToken(auth, __initial_auth_token);
-        } else {
-          await signInAnonymously(auth);
+        if (
+          !auth.currentUser
+        ) {
+          return;
         }
-      } catch (err) {
-        showToast("認証エラーが発生しました");
-        const loader = document.getElementById('initial-loading');
-        if (loader) loader.innerHTML = `<p class="text-red-500 text-xs">接続エラー: 再読み込みしてください</p>`;
-        console.error(err);
-      }
-    };
 
-    onAuthStateChanged(auth, (user) => {
-      if (user) {
-        if (!shareId) {
-          shareId = user.uid;
-          try {
-            const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?uid=' + shareId;
-            window.history.replaceState({path: newUrl}, '', newUrl);
-          } catch (e) {
-            console.warn("プレビュー環境のためURL更新をスキップしました");
+
+        if (
+          currentMembers.length <= 1
+        ) {
+
+          showToast(
+            '入力者は最低1人必要です'
+          );
+
+          return;
+        }
+
+
+        showConfirm(
+          'この入力者を削除しますか？\n過去のメモの表示は「不明」になります。',
+          async () => {
+
+            try {
+
+              await deleteDoc(
+                getMemberDoc(
+                  id
+                )
+              );
+
+
+              if (
+                selectedMemberId === id
+              ) {
+
+                const remaining =
+                  currentMembers.filter(
+                    member =>
+                      member.id !== id
+                  );
+
+
+                if (
+                  remaining.length > 0
+                ) {
+
+                  remaining.sort(
+                    (
+                      a,
+                      b
+                    ) =>
+                      Number(
+                        a.order ?? 0
+                      ) -
+                      Number(
+                        b.order ?? 0
+                      )
+                  );
+
+
+                  selectedMemberId =
+                    remaining[0].id;
+
+
+                  localStorage.setItem(
+                    memberStorageKey,
+                    selectedMemberId
+                  );
+                }
+              }
+
+            }
+            catch (error) {
+
+              console.error(
+                error
+              );
+
+
+              showToast(
+                '削除に失敗しました'
+              );
+            }
+          }
+        );
+      };
+
+
+    /* =========================================================
+       メンバー並び替え
+    ========================================================= */
+
+    window.moveMember =
+      async (
+        id,
+        direction
+      ) => {
+
+        if (
+          !auth.currentUser
+        ) {
+          return;
+        }
+
+
+        const sorted =
+          [...currentMembers]
+            .sort(
+              (
+                a,
+                b
+              ) =>
+                Number(
+                  a.order ?? 0
+                ) -
+                Number(
+                  b.order ?? 0
+                )
+            );
+
+
+        const index =
+          sorted.findIndex(
+            member =>
+              member.id === id
+          );
+
+
+        if (
+          index === -1
+        ) {
+          return;
+        }
+
+
+        const targetIndex =
+          direction === 'up'
+            ? index - 1
+            : index + 1;
+
+
+        if (
+          targetIndex < 0 ||
+          targetIndex >=
+            sorted.length
+        ) {
+          return;
+        }
+
+
+        [
+          sorted[index],
+          sorted[targetIndex]
+        ] = [
+          sorted[targetIndex],
+          sorted[index]
+        ];
+
+
+        currentMembers =
+          sorted.map(
+            (
+              member,
+              idx
+            ) => ({
+              ...member,
+              order:
+                idx
+            })
+          );
+
+
+        updateMemberUI();
+
+
+        try {
+
+          const batch =
+            writeBatch(
+              db
+            );
+
+
+          currentMembers.forEach(
+            (
+              member,
+              idx
+            ) => {
+
+              batch.update(
+                getMemberDoc(
+                  member.id
+                ),
+                {
+                  order:
+                    idx
+                }
+              );
+            }
+          );
+
+
+          await batch.commit();
+
+        }
+        catch (error) {
+
+          console.error(
+            error
+          );
+
+
+          showToast(
+            '並び替えに失敗しました'
+          );
+        }
+      };
+
+
+    /* =========================================================
+       画像拡大
+    ========================================================= */
+
+    window.openImage =
+      url => {
+
+        const modal =
+          document.getElementById(
+            'image-modal'
+          );
+
+
+        const img =
+          document.getElementById(
+            'expanded-image'
+          );
+
+
+        img.src =
+          url;
+
+
+        modal.classList.remove(
+          'hidden'
+        );
+
+
+        setTimeout(
+          () => {
+
+            modal.classList.remove(
+              'opacity-0'
+            );
+
+          },
+          10
+        );
+      };
+
+
+    /* =========================================================
+       メモ追加
+    ========================================================= */
+
+    document
+      .getElementById(
+        'add-form'
+      )
+      .onsubmit =
+      async event => {
+
+        event.preventDefault();
+
+
+        if (
+          !auth.currentUser
+        ) {
+
+          showToast(
+            'Firebase接続中です'
+          );
+
+          return;
+        }
+
+
+        const inputEl =
+          document.getElementById(
+            'item-input'
+          );
+
+
+        const text =
+          inputEl.value.trim();
+
+
+        if (
+          !text &&
+          !currentImageBlob
+        ) {
+          return;
+        }
+
+
+        if (
+          !selectedMemberId &&
+          currentMembers.length > 0
+        ) {
+
+          selectedMemberId =
+            currentMembers[0].id;
+
+
+          localStorage.setItem(
+            memberStorageKey,
+            selectedMemberId
+          );
+        }
+
+
+        if (
+          !selectedMemberId
+        ) {
+
+          showToast(
+            '入力者を選択してください'
+          );
+
+          return;
+        }
+
+
+        const btn =
+          document.getElementById(
+            'submit-btn'
+          );
+
+
+        btn.disabled =
+          true;
+
+
+        let uploadedImage =
+          null;
+
+
+        try {
+
+          if (
+            currentImageBlob
+          ) {
+
+            showToast(
+              '画像をアップロード中...'
+            );
+
+
+            uploadedImage =
+              await uploadImage(
+                currentImageBlob
+              );
+          }
+
+
+          const newItem = {
+
+            text,
+
+            memberId:
+              selectedMemberId,
+
+            completed:
+              false,
+
+            createdAt:
+              Date.now(),
+
+            imageUrl:
+              uploadedImage
+                ? uploadedImage.downloadUrl
+                : null,
+
+            storagePath:
+              uploadedImage
+                ? uploadedImage.storagePath
+                : null
+
+          };
+
+
+          await addDoc(
+            getListCol(),
+            newItem
+          );
+
+
+          inputEl.value =
+            '';
+
+
+          clearImagePreview();
+
+
+          setTimeout(
+            () => {
+
+              const container =
+                document.getElementById(
+                  'list-container'
+                );
+
+
+              container.scrollTop =
+                container.scrollHeight;
+
+            },
+            100
+          );
+
+        }
+        catch (error) {
+
+          console.error(
+            'Add item error:',
+            error
+          );
+
+
+          /*
+           * Storageへのアップロードだけ成功し、
+           * Firestore追加に失敗した場合は
+           * 孤立画像を削除する
+           */
+          if (
+            uploadedImage?.storagePath
+          ) {
+
+            try {
+
+              await deleteObject(
+                ref(
+                  storage,
+                  uploadedImage.storagePath
+                )
+              );
+
+            }
+            catch {
+              // 削除失敗は無視
+            }
+          }
+
+
+          if (
+            error?.code ===
+            'storage/unauthorized'
+          ) {
+
+            showToast(
+              '画像保存の権限がありません'
+            );
+
+          }
+          else {
+
+            showToast(
+              `追加に失敗しました ${
+                error?.code || ''
+              }`
+            );
+          }
+
+        }
+        finally {
+
+          btn.disabled =
+            false;
+        }
+      };
+
+
+    /* =========================================================
+       画像選択
+    ========================================================= */
+
+    document
+      .getElementById(
+        'trigger-image-btn'
+      )
+      .onclick =
+      () => {
+
+        document
+          .getElementById(
+            'image-input'
+          )
+          .click();
+      };
+
+
+    document
+      .getElementById(
+        'image-input'
+      )
+      .onchange =
+      async event => {
+
+        const file =
+          event.target.files?.[0];
+
+
+        if (!file) {
+          return;
+        }
+
+
+        if (
+          !file.type.startsWith(
+            'image/'
+          )
+        ) {
+
+          showToast(
+            '画像ファイルを選択してください'
+          );
+
+          event.target.value =
+            '';
+
+          return;
+        }
+
+
+        showToast(
+          '画像を処理中...'
+        );
+
+
+        try {
+
+          const blob =
+            await resizeImage(
+              file
+            );
+
+
+          currentImageBlob =
+            blob;
+
+
+          if (
+            currentImagePreviewUrl
+          ) {
+
+            URL.revokeObjectURL(
+              currentImagePreviewUrl
+            );
+          }
+
+
+          currentImagePreviewUrl =
+            URL.createObjectURL(
+              blob
+            );
+
+
+          document
+            .getElementById(
+              'image-preview'
+            )
+            .src =
+            currentImagePreviewUrl;
+
+
+          document
+            .getElementById(
+              'image-preview-container'
+            )
+            .classList
+            .remove(
+              'hidden'
+            );
+
+        }
+        catch (error) {
+
+          console.error(
+            error
+          );
+
+
+          showToast(
+            '画像の読み込みに失敗しました'
+          );
+        }
+
+
+        event.target.value =
+          '';
+      };
+
+
+    const clearImagePreview =
+      () => {
+
+        currentImageBlob =
+          null;
+
+
+        if (
+          currentImagePreviewUrl
+        ) {
+
+          URL.revokeObjectURL(
+            currentImagePreviewUrl
+          );
+
+
+          currentImagePreviewUrl =
+            null;
+        }
+
+
+        document
+          .getElementById(
+            'image-preview-container'
+          )
+          .classList
+          .add(
+            'hidden'
+          );
+
+
+        document
+          .getElementById(
+            'image-preview'
+          )
+          .src =
+          '';
+      };
+
+
+    document
+      .getElementById(
+        'remove-image-btn'
+      )
+      .onclick =
+      clearImagePreview;
+
+
+    /* =========================================================
+       設定
+    ========================================================= */
+
+    document
+      .getElementById(
+        'open-settings-btn'
+      )
+      .onclick =
+      () => {
+
+        renderColorPalette();
+
+
+        document
+          .getElementById(
+            'settings-modal'
+          )
+          .classList
+          .remove(
+            'hidden'
+          );
+      };
+
+
+    document
+      .getElementById(
+        'close-settings'
+      )
+      .onclick =
+      () => {
+
+        document
+          .getElementById(
+            'settings-modal'
+          )
+          .classList
+          .add(
+            'hidden'
+          );
+      };
+
+
+    /* =========================================================
+       メンバー追加
+    ========================================================= */
+
+    document
+      .getElementById(
+        'add-member-btn'
+      )
+      .onclick =
+      async () => {
+
+        if (
+          !auth.currentUser
+        ) {
+          return;
+        }
+
+
+        const input =
+          document.getElementById(
+            'new-member-name'
+          );
+
+
+        const name =
+          input.value.trim();
+
+
+        if (!name) {
+          return;
+        }
+
+
+        const newOrder =
+          currentMembers.length;
+
+
+        try {
+
+          const ref =
+            await addDoc(
+              getMembersCol(),
+              {
+
+                name,
+
+                colorIndex:
+                  selectedColorIndex,
+
+                order:
+                  newOrder,
+
+                createdAt:
+                  Date.now()
+
+              }
+            );
+
+
+          input.value =
+            '';
+
+
+          selectedMemberId =
+            ref.id;
+
+
+          localStorage.setItem(
+            memberStorageKey,
+            ref.id
+          );
+
+
+          showToast(
+            '入力者を追加しました'
+          );
+
+        }
+        catch (error) {
+
+          console.error(
+            error
+          );
+
+
+          showToast(
+            '追加に失敗しました'
+          );
+        }
+      };
+
+
+    /* =========================================================
+       共有URL
+    ========================================================= */
+
+    document
+      .getElementById(
+        'copy-url-btn'
+      )
+      .onclick =
+      async () => {
+
+        const url =
+          window.location.protocol +
+          "//" +
+          window.location.host +
+          window.location.pathname +
+          '?uid=' +
+          encodeURIComponent(
+            shareId
+          );
+
+
+        try {
+
+          if (
+            navigator.share
+          ) {
+
+            await navigator.share({
+              title:
+                '家族のお買い物メモ',
+
+              url
+            });
+
+
+            return;
+          }
+
+
+          if (
+            navigator.clipboard
+          ) {
+
+            await navigator
+              .clipboard
+              .writeText(
+                url
+              );
+
+
+            showToast(
+              '招待URLをコピーしました！'
+            );
+
+
+            return;
+          }
+
+        }
+        catch (error) {
+
+          if (
+            error?.name ===
+            'AbortError'
+          ) {
+            return;
           }
         }
-        startSubscriptions();
-      }
-    });
 
-    setTimeout(() => {
-      hideLoading();
-    }, 2500);
+
+        const textArea =
+          document.createElement(
+            'textarea'
+          );
+
+
+        textArea.value =
+          url;
+
+
+        textArea.style.position =
+          'fixed';
+
+
+        textArea.style.left =
+          '-9999px';
+
+
+        document.body.appendChild(
+          textArea
+        );
+
+
+        textArea.focus();
+        textArea.select();
+
+
+        try {
+
+          document.execCommand(
+            'copy'
+          );
+
+
+          showToast(
+            '招待URLをコピーしました！'
+          );
+
+        }
+        catch {
+
+          prompt(
+            '以下のURLをコピーしてください',
+            url
+          );
+        }
+
+
+        document.body.removeChild(
+          textArea
+        );
+      };
+
+
+    /* =========================================================
+       画像モーダル
+    ========================================================= */
+
+    document
+      .getElementById(
+        'image-modal'
+      )
+      .onclick =
+      event => {
+
+        if (
+          event.target.id ===
+            'image-modal' ||
+
+          event.target.id ===
+            'close-image-modal' ||
+
+          event.target.closest(
+            '#close-image-modal'
+          )
+        ) {
+
+          const modal =
+            document.getElementById(
+              'image-modal'
+            );
+
+
+          modal.classList.add(
+            'opacity-0'
+          );
+
+
+          setTimeout(
+            () => {
+
+              modal.classList.add(
+                'hidden'
+              );
+
+
+              document
+                .getElementById(
+                  'expanded-image'
+                )
+                .src =
+                '';
+
+            },
+            300
+          );
+        }
+      };
+
+
+    /* =========================================================
+       Firebase初期化
+    ========================================================= */
+
+    const init =
+      async () => {
+
+        lucide.createIcons();
+
+
+        try {
+
+          await setPersistence(
+            auth,
+            browserLocalPersistence
+          );
+
+
+          if (
+            !auth.currentUser
+          ) {
+
+            await signInAnonymously(
+              auth
+            );
+          }
+
+        }
+        catch (error) {
+
+          console.error(
+            'Auth error:',
+            error
+          );
+
+
+          showToast(
+            `認証エラー: ${
+              error?.code || ''
+            }`
+          );
+
+
+          const loader =
+            document.getElementById(
+              'initial-loading'
+            );
+
+
+          if (loader) {
+
+            loader.innerHTML = `
+              <div class="text-center px-6">
+                <p class="text-red-500 text-xs font-bold">
+                  Firebaseへの接続に失敗しました
+                </p>
+
+                <p class="text-stone-400 text-[10px] mt-2">
+                  ページを再読み込みしてください
+                </p>
+              </div>
+            `;
+          }
+        }
+      };
+
+
+    onAuthStateChanged(
+      auth,
+      user => {
+
+        if (user) {
+
+          startSubscriptions();
+
+        }
+      }
+    );
+
+
+    /*
+     * 万一onSnapshotの応答が遅い場合でも
+     * ローディング画面を永久表示させない
+     */
+    setTimeout(
+      () => {
+
+        hideLoading();
+
+      },
+      5000
+    );
+
 
     init();
+
   </script>
+
 </body>
 </html>
