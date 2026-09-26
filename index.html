@@ -1732,12 +1732,25 @@
                   b.completed
                 ) {
 
+                  // 未完了同士: 上が古い、下が新しい（昇順）
+                  if (!a.completed) {
+                    return (
+                      Number(
+                        a.createdAt || 0
+                      ) -
+                      Number(
+                        b.createdAt || 0
+                      )
+                    );
+                  }
+
+                  // 完了済み同士: 上が新しい、下が古い（降順）
                   return (
                     Number(
-                      a.createdAt || 0
+                      b.createdAt || 0
                     ) -
                     Number(
-                      b.createdAt || 0
+                      a.createdAt || 0
                     )
                   );
                 }
@@ -3223,22 +3236,7 @@
 
           clearImagePreview();
 
-
-          setTimeout(
-            () => {
-
-              const container =
-                document.getElementById(
-                  'list-container'
-                );
-
-
-              container.scrollTop =
-                container.scrollHeight;
-
-            },
-            100
-          );
+          // 新規登録時は最下部へのスクロール処理を削除し、現在のスクロール位置を維持します
 
         }
         catch (error) {
